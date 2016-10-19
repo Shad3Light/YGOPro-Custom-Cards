@@ -19,7 +19,7 @@ function c77662921.initial_effect(c)
 	e3:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_FIELD)
 	e3:SetProperty(EFFECT_FLAG_BOTH_SIDE)
 	e3:SetCode(EFFECT_OVERLAY_REMOVE_REPLACE)
-	e3:SetRange(LOCATION_SZONE)
+	e3:SetRange(LOCATION_FZONE)
 	e3:SetCondition(c77662921.rcon)
 	e3:SetOperation(c77662921.rop)
 	c:RegisterEffect(e3)
@@ -31,9 +31,6 @@ function c77662921.initial_effect(c)
 	e4:SetCondition(c77662921.discon)
 	e4:SetOperation(c77662921.disop)
 	c:RegisterEffect(e4)
-end
-function c77662921.costfilter(c)
-	return c:IsRace(RACE_MACHINE) and c:IsType(TYPE_TUNER) and c:IsDiscardable()
 end
 function c77662921.rcon(e,tp,eg,ep,ev,re,r,rp,chk)
 	return e:GetHandler():GetFlagEffect(77662921+ep)==0

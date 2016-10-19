@@ -27,7 +27,7 @@ function c99200156.initial_effect(c)
 	c:RegisterEffect(e4)
 end
 function c99200156.efilter(e,re,rp)
-	return re:GetHandler():IsType(TYPE_TRAP) and aux.tgval(e,re,rp)
+	return re:GetHandler():IsType(TYPE_TRAP)
 end
 function c99200156.filter(c)
 	return c:IsSetCard(0xda3790) and c:IsAbleToDeck()

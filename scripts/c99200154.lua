@@ -30,7 +30,7 @@ function c99200154.initial_effect(c)
 	c:RegisterEffect(e3)
 end
 function c99200154.efilter(e,re,rp)
-	return re:GetHandler():IsType(TYPE_TRAP) and aux.tgval(e,re,rp)
+	return re:GetHandler():IsType(TYPE_TRAP)
 end
 function c99200154.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return ep~=tp and Duel.GetCurrentPhase()~=PHASE_DRAW

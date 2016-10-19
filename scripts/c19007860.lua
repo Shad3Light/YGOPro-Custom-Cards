@@ -47,7 +47,7 @@ function c19007860.initial_effect(c)
 	c:RegisterEffect(e4)
 end
 function c19007860.ovfilter(c)
-	return c:IsFaceup() and c:IsSetCard(0xda3791) or c:IsCode(15914410) or c:IsCode(41309158) and c:GetCode()~=19007860 and c:IsType(TYPE_XYZ)
+	return c:IsFaceup() and c:IsAttribute(ATTRIBUTE_LIGHT) and c:IsType(TYPE_XYZ) and c:GetCode()~=19007860
 end
 function c19007860.xyzop(e,tp,chk)
 	if chk==0 then return true end

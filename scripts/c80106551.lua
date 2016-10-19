@@ -5,9 +5,9 @@ function c80106551.initial_effect(c)
 	e1:SetCategory(CATEGORY_DESTROY)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
-	e1:SetCondition(c80106551.condition)
-	e1:SetTarget(c80106551.target)
-	e1:SetOperation(c80106551.activate)
+	e1:SetCondition(c80106551.descon)
+	e1:SetTarget(c80106551.destg)
+	e1:SetOperation(c80106551.desop)
 	c:RegisterEffect(e1)
 	--spsummon
 	local e2=Effect.CreateEffect(c)
@@ -21,26 +21,26 @@ function c80106551.initial_effect(c)
 	e2:SetOperation(c80106551.spop)
 	c:RegisterEffect(e2)
 end
-function c80106551.cfilter(c)
+function c80106551.cifilter(c)
 	return c:IsFaceup() and c:IsCode(80106530)
 end
-function c80106551.condition(e,tp,eg,ep,ev,re,r,rp)
-	return Duel.IsExistingMatchingCard(c80106551.cfilter,tp,LOCATION_MZONE,0,1,nil)
+function c80106551.descon(e,tp,eg,ep,ev,re,r,rp)
+	return Duel.IsExistingMatchingCard(c80106551.cifilter,tp,LOCATION_MZONE,0,1,nil)
 end
 function c80106551.desfilter(c)
 	return c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsDestructable()
 end
-function c80106551.target(e,tp,eg,ep,ev,re,r,rp,chk)
+function c80106551.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(c80106551.desfilter,tp,0,LOCATION_ONFIELD,1,nil) end
 	local g=Duel.GetMatchingGroup(c80106551.desfilter,tp,0,LOCATION_ONFIELD,nil)
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
-function c80106551.activate(e,tp,eg,ep,ev,re,r,rp)
+function c80106551.desop(e,tp,eg,ep,ev,re,r,rp)
 	local g=Duel.GetMatchingGroup(c80106551.desfilter,tp,0,LOCATION_ONFIELD,nil)
 	Duel.Destroy(g,REASON_EFFECT)
 end
 function c80106551.spcon(e,tp,eg,ep,ev,re,r,rp)
-	return e:GetHandler():IsPreviousLocation(LOCATION_HAND) and bit.band(r,0x4040)==0x4040
+	return e:GetHandler():IsReason(REASON_EFFECT) and e:GetHandler():IsPreviousLocation(LOCATION_HAND) and not e:GetHandler():IsReason(REASON_RETURN)
 end
 function c80106551.tokenfilter(c,e,tp)
 	return c:IsFaceup() and c:IsType(TYPE_MONSTER) and c:IsSetCard(0xca00)

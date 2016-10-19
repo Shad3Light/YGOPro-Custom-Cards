@@ -21,7 +21,7 @@ function c99200153.initial_effect(c)
 	c:RegisterEffect(e2)
 end
 function c99200153.efilter(e,re,rp)
-	return re:GetHandler():IsType(TYPE_TRAP) and aux.tgval(e,re,rp)
+	return re:GetHandler():IsType(TYPE_TRAP)
 end
 function c99200153.condition(e,tp,eg,ep,ev,re,r,rp)
 	local at=Duel.GetAttacker()

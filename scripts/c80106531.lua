@@ -28,21 +28,26 @@ function c80106531.initial_effect(c)
 	e3:SetOperation(c80106531.tdop)
 	c:RegisterEffect(e3)
 end
+function c80106531.cfilter(c)
+	return c:IsType(TYPE_MONSTER)
+end
 function c80106531.desrepcon(e)
 	local tp=e:GetHandlerPlayer()
 	return Duel.GetFieldGroupCount(tp,LOCATION_EXTRA,0)==0
-		and not Duel.IsExistingMatchingCard(Card.IsType,tp,LOCATION_GRAVE,0,1,nil,TYPE_MONSTER)
-		and Duel.IsExistingMatchingCard(Card.IsType,tp,0,LOCATION_GRAVE,1,nil,TYPE_MONSTER)
+		and not Duel.IsExistingMatchingCard(c80106531.cfilter,tp,LOCATION_GRAVE,0,1,nil)
+		and Duel.IsExistingMatchingCard(c80106531.cfilter,tp,0,LOCATION_GRAVE,1,nil)
 end
-function c80106531.cfilter(c)
-	return c:IsSetCard(0xca00) and c:IsDiscardable()
+function c80106531.filter(c)
+	return c:IsSetCard(0xca00)
 end
 function c80106531.desreptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return not c:IsReason(REASON_REPLACE)
-		and Duel.IsExistingMatchingCard(c80106531.cfilter,tp,LOCATION_HAND,0,1,nil) end
+		and Duel.IsExistingMatchingCard(c80106531.filter,tp,LOCATION_HAND,0,1,nil) end
 	if Duel.SelectYesNo(tp,aux.Stringid(80106531,0)) then
-		Duel.DiscardHand(tp,c80106531.cfilter,1,1,REASON_EFFECT+REASON_DISCARD+REASON_REPLACE)
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISCARD)
+		local g=Duel.SelectMatchingCard(tp,c80106531.filter,tp,LOCATION_HAND,0,1,1,nil)
+		Duel.SendtoGrave(g,REASON_EFFECT+REASON_REPLACE)
 		return true
 	else return false end
 end
@@ -54,12 +59,12 @@ function c80106531.tdcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.PayLPCost(tp,800)
 end
 function c80106531.tdtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return e:GetHandler():IsAbleToDeck() end
+	if chk==0 then return true end
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,e:GetHandler(),1,0,0)
 end
 function c80106531.tdop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	if c:IsRelateToEffect(e) and c:IsAbleToDeck() then
+	if c:IsRelateToEffect(e) then
 		Duel.SendtoDeck(c,nil,2,REASON_EFFECT)
 	end
 end

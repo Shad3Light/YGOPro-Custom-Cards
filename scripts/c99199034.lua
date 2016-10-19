@@ -260,7 +260,7 @@ end
 function c99199034.rvcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(c99199034.cfilter,tp,LOCATION_GRAVE,0,1,nil) end
 	local g=Duel.SelectMatchingCard(tp,c99199034.cfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	Duel.PSendtoExtra(g,POS_FACEUP,REASON_COST)
+	Duel.SendtoExtraP(g,POS_FACEUP,REASON_COST)
 end
 function c99199034.thfilter(c)
 	return c:IsType(TYPE_PENDULUM) and c:IsSetCard(0xff15) and c:IsAbleToHand()

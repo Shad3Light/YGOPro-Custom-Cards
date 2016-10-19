@@ -52,5 +52,5 @@ function c99200181.operation(e,tp,eg,ep,ev,re,r,rp)
 	Duel.SpecialSummonComplete()
 end
 function c99200181.efilter(e,re,rp)
-	return re:GetHandler():IsType(TYPE_TRAP) and aux.tgval(e,re,rp)
+	return re:GetHandler():IsType(TYPE_TRAP)
 end

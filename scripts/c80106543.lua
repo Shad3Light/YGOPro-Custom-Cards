@@ -1,6 +1,5 @@
 --The Panticle of Madness
 function c80106543.initial_effect(c)
-	c:SetUniqueOnField(1,0,80106543)
 	--Activate
 	local e1=Effect.CreateEffect(c)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
@@ -35,6 +34,7 @@ function c80106543.initial_effect(c)
 	e4:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e4:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e4:SetCode(EVENT_TO_GRAVE)
+	e4:SetProperty(EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_DELAY)
 	e4:SetCondition(c80106543.spcon)
 	e4:SetCost(c80106543.spcost)
 	e4:SetTarget(c80106543.sptg)
@@ -65,7 +65,7 @@ end
 function c80106543.thcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local bc=c:GetBattleTarget()
-	return bc:IsLocation(LOCATION_GRAVE) and bc:IsType(TYPE_MONSTER) and c:IsChainAttackable() and c:IsStatus(STATUS_OPPO_BATTLE)
+	return c:IsRelateToBattle() and bc:IsLocation(LOCATION_GRAVE) and bc:IsType(TYPE_MONSTER)
 end
 function c80106543.thfilter(c)
 	return c:IsSetCard(0xca00) and c:IsAbleToHand()
@@ -83,7 +83,7 @@ function c80106543.thop(e,tp,eg,ep,ev,re,r,rp)
 	end
 end
 function c80106543.spcon(e,tp,eg,ep,ev,re,r,rp)
-	return e:GetHandler():IsPreviousLocation(LOCATION_HAND) and bit.band(r,0x4040)==0x4040
+	return e:GetHandler():IsReason(REASON_EFFECT) and e:GetHandler():IsPreviousLocation(LOCATION_HAND) and not e:GetHandler():IsReason(REASON_RETURN)
 end
 function c80106543.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.CheckLPCost(tp,800) end
@@ -91,17 +91,23 @@ function c80106543.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 end
 function c80106543.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		and Duel.IsPlayerCanSpecialSummonMonster(tp,80106543,0,0x21,5,2000,1200,RACE_ZOMBIE,ATTRIBUTE_DARK) end
+		and Duel.IsPlayerCanSpecialSummonMonster(tp,80106543,0,0xca00,5,2000,1200,RACE_ZOMBIE,ATTRIBUTE_DARK) end
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
 function c80106543.spop(e,tp,eg,ep,ev,re,r,rp)
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e)
-		and Duel.IsPlayerCanSpecialSummonMonster(tp,80106543,0,0x21,5,2000,1200,RACE_ZOMBIE,ATTRIBUTE_DARK) then
-		c:AddMonsterAttribute(TYPE_EFFECT)
+		and Duel.IsPlayerCanSpecialSummonMonster(tp,80106543,0,0xca00,5,2000,1200,RACE_ZOMBIE,ATTRIBUTE_DARK) then
+		c:SetStatus(STATUS_NO_LEVEL,false)
+		local e1=Effect.CreateEffect(c)
+		e1:SetType(EFFECT_TYPE_SINGLE)
+		e1:SetCode(EFFECT_CHANGE_TYPE)
+		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
+		e1:SetValue(TYPE_EFFECT+TYPE_MONSTER)
+		e1:SetReset(RESET_EVENT+0x47c0000)
+		c:RegisterEffect(e1,true)
 		Duel.SpecialSummon(c,0,tp,tp,true,false,POS_FACEUP)
-		c:AddMonsterAttributeComplete()
 		local e7=Effect.CreateEffect(c)
 		e7:SetType(EFFECT_TYPE_SINGLE)
 		e7:SetCode(EFFECT_LEAVE_FIELD_REDIRECT)

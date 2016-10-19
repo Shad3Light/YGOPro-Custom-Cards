@@ -1,6 +1,5 @@
 --Sacred Seal of the Panticles
 function c80106541.initial_effect(c)
-	c:SetUniqueOnField(1,0,80106541)
 	--Activate
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -13,17 +12,25 @@ function c80106541.initial_effect(c)
 	e2:SetRange(LOCATION_FZONE)
 	e2:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
 	e2:SetTargetRange(1,1)
-	e2:SetCondition(c80106541.dispcon)
-	e2:SetTarget(c80106541.displimit)
+	e2:SetCondition(c80106541.desrepcon)
+	e2:SetTarget(c80106541.splimit)
 	c:RegisterEffect(e2)
 	--self destroy
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE)
 	e3:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
-	e3:SetRange(LOCATION_ONFIELD)
+	e3:SetRange(LOCATION_MZONE)
 	e3:SetCode(EFFECT_SELF_DESTROY)
 	e3:SetCondition(c80106541.sdcon)
 	c:RegisterEffect(e3)
+	--self destroy2
+	local e4=Effect.CreateEffect(c)
+	e4:SetType(EFFECT_TYPE_SINGLE)
+	e4:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
+	e4:SetRange(LOCATION_FZONE)
+	e4:SetCode(EFFECT_SELF_DESTROY)
+	e4:SetCondition(c80106541.sdcon)
+	c:RegisterEffect(e4)
 	--negate
 	local e5=Effect.CreateEffect(c)
 	e5:SetCategory(CATEGORY_NEGATE+CATEGORY_REMOVE)
@@ -43,6 +50,7 @@ function c80106541.initial_effect(c)
 	e6:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e6:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e6:SetCode(EVENT_TO_GRAVE)
+	e6:SetProperty(EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_DELAY)
 	e6:SetCondition(c80106541.spcon)
 	e6:SetCost(c80106541.spcost)
 	e6:SetTarget(c80106541.sptg)
@@ -61,13 +69,16 @@ function c80106541.initial_effect(c)
 	e7:SetOperation(c80106541.rmop)
 	c:RegisterEffect(e7)
 end
-function c80106541.dispcon(e)
+function c80106541.chilfilter(c)
+	return c:IsType(TYPE_MONSTER)
+end
+function c80106541.desrepcon(e)
 	local tp=e:GetHandlerPlayer()
 	return Duel.GetFieldGroupCount(tp,LOCATION_EXTRA,0)==0
-		and not Duel.IsExistingMatchingCard(Card.IsType,tp,LOCATION_GRAVE,0,1,nil,TYPE_MONSTER)
-		and Duel.IsExistingMatchingCard(Card.IsType,tp,0,LOCATION_GRAVE,1,nil,TYPE_MONSTER)
+		and not Duel.IsExistingMatchingCard(c80106541.chilfilter,tp,LOCATION_GRAVE,0,1,nil)
+		and Duel.IsExistingMatchingCard(c80106541.chilfilter,tp,0,LOCATION_GRAVE,1,nil)
 end
-function c80106541.displimit(e,c)
+function c80106541.splimit(e,c)
 	return c:IsLocation(LOCATION_EXTRA)
 end
 function c80106541.sdfilter(c)
@@ -77,14 +88,14 @@ function c80106541.sdcon(e)
 	return Duel.IsExistingMatchingCard(c80106541.sdfilter,e:GetHandlerPlayer(),LOCATION_MZONE,0,1,nil)
 end
 function c80106541.negcon(e,tp,eg,ep,ev,re,r,rp)
-	return re:IsActiveType(TYPE_MONSTER) and Duel.IsChainNegatable(ev)
+	return not e:GetHandler():IsStatus(STATUS_BATTLE_DESTROYED)	and re:IsActiveType(TYPE_MONSTER) and Duel.IsChainNegatable(ev)
 end
 function c80106541.cfilter(c)
 	return c:IsSetCard(0xca00) and c:IsDiscardable()
 end
 function c80106541.negcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(c80106541.cfilter,tp,LOCATION_HAND,0,1,nil) end
-	Duel.DiscardHand(tp,c80106541.cfilter,1,1,REASON_COST+REASON_DISCARD)
+	Duel.DiscardHand(tp,c80106541.cfilter,1,1,REASON_COST+REASON_DISCARD+REASON_EFFECT)
 end
 function c80106541.negtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
@@ -100,7 +111,7 @@ function c80106541.negop(e,tp,eg,ep,ev,re,r,rp)
 	end
 end
 function c80106541.spcon(e,tp,eg,ep,ev,re,r,rp)
-	return e:GetHandler():IsPreviousLocation(LOCATION_HAND) and bit.band(r,0x4040)==0x4040
+	return e:GetHandler():IsReason(REASON_EFFECT) and e:GetHandler():IsPreviousLocation(LOCATION_HAND) and not e:GetHandler():IsReason(REASON_RETURN)
 end
 function c80106541.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.CheckLPCost(tp,1000) end
@@ -108,17 +119,23 @@ function c80106541.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 end
 function c80106541.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		and Duel.IsPlayerCanSpecialSummonMonster(tp,80106541,0,0x21,7,2300,1000,RACE_MACHINE,ATTRIBUTE_DARK) end
+		and Duel.IsPlayerCanSpecialSummonMonster(tp,80106541,0,0xca00,7,2300,1000,RACE_MACHINE,ATTRIBUTE_DARK) end
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
 function c80106541.spop(e,tp,eg,ep,ev,re,r,rp)
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e)
-		and Duel.IsPlayerCanSpecialSummonMonster(tp,80106541,0,0x21,7,2300,1000,RACE_MACHINE,ATTRIBUTE_DARK) then
-		c:AddMonsterAttribute(TYPE_EFFECT)
+		and Duel.IsPlayerCanSpecialSummonMonster(tp,80106541,0,0xca00,7,2300,1000,RACE_MACHINE,ATTRIBUTE_DARK) then
+		c:SetStatus(STATUS_NO_LEVEL,false)
+		local e1=Effect.CreateEffect(c)
+		e1:SetType(EFFECT_TYPE_SINGLE)
+		e1:SetCode(EFFECT_CHANGE_TYPE)
+		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
+		e1:SetValue(TYPE_EFFECT+TYPE_MONSTER)
+		e1:SetReset(RESET_EVENT+0x47c0000)
+		c:RegisterEffect(e1,true)
 		Duel.SpecialSummon(c,0,tp,tp,true,false,POS_FACEUP)
-		c:AddMonsterAttributeComplete()
 		local e7=Effect.CreateEffect(c)
 		e7:SetType(EFFECT_TYPE_SINGLE)
 		e7:SetCode(EFFECT_LEAVE_FIELD_REDIRECT)
@@ -138,7 +155,7 @@ function c80106541.rmcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	e:GetHandler():RegisterEffect(e1,true)
 end
 function c80106541.tgfilter(c)
-	return bit.band(c:GetSummonType(),SUMMON_TYPE_SPECIAL)==SUMMON_TYPE_SPECIAL and c:IsAbleToRemove()
+	return c:IsFaceup() and bit.band(c:GetSummonType(),SUMMON_TYPE_SPECIAL)==SUMMON_TYPE_SPECIAL and c:IsAbleToRemove()
 end
 function c80106541.rmtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and c80106541.tgfilter(chkc) end
@@ -149,7 +166,7 @@ function c80106541.rmtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 end
 function c80106541.rmop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=Duel.GetFirstTarget()
-	if tc and tc:IsFaceup() and tc:IsRelateToEffect(e) then
+	if tc:IsFaceup() and tc:IsRelateToEffect(e) then
 		Duel.Remove(tc,POS_FACEUP,REASON_EFFECT)
 	end
 end

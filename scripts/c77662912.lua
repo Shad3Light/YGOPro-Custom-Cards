@@ -47,7 +47,7 @@ function c77662912.lvcon(e,tp,eg,ep,ev,re,r,rp)
 end
 function c77662912.lvfilter(c,lv)
 	local clv=c:GetLevel()
-	return c:IsFaceup() and c:IsRace(RACE_MACHINE) and clv>0 and clv~=lv
+	return c:IsFaceup() and c:IsRace(RACE_MACHINE) and not c:IsType(TYPE_XYZ) and clv>0 and clv~=lv
 end
 function c77662912.lvtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c77662912.lvfilter(chkc,e:GetHandler():GetLevel()) end

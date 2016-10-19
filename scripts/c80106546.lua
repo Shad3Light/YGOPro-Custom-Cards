@@ -1,6 +1,5 @@
 --The Fourth Panticle of Ceremony
 function c80106546.initial_effect(c)
-	c:SetUniqueOnField(1,0,80106546)
 	--Activate
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TODECK+CATEGORY_DRAW)
@@ -8,8 +7,8 @@ function c80106546.initial_effect(c)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,80106546)
-	e1:SetTarget(c80106546.target)
-	e1:SetOperation(c80106546.activate)
+	e1:SetTarget(c80106546.drtg)
+	e1:SetOperation(c80106546.drop)
 	c:RegisterEffect(e1)
 	--self destroy
 	local e2=Effect.CreateEffect(c)
@@ -23,10 +22,9 @@ function c80106546.initial_effect(c)
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(80106546,0))
 	e3:SetCategory(CATEGORY_DAMAGE)
-	e3:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
 	e3:SetType(EFFECT_TYPE_TRIGGER_O+EFFECT_TYPE_SINGLE)
 	e3:SetCode(EVENT_SPSUMMON_SUCCESS)
-	e3:SetCondition(c80106546.damcon)
+	e3:SetCondition(c80106546.desrepcon)
 	e3:SetTarget(c80106546.damtg)
 	e3:SetOperation(c80106546.damop)
 	c:RegisterEffect(e3)
@@ -36,6 +34,7 @@ function c80106546.initial_effect(c)
 	e4:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e4:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e4:SetCode(EVENT_TO_GRAVE)
+	e4:SetProperty(EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_DELAY)
 	e4:SetCondition(c80106546.spcon)
 	e4:SetCost(c80106546.spcost)
 	e4:SetTarget(c80106546.sptg)
@@ -45,13 +44,13 @@ end
 function c80106546.drfilter(c)
 	return c:IsSetCard(0xca00) and c:IsAbleToDeck() and not c:IsPublic()
 end
-function c80106546.target(e,tp,eg,ep,ev,re,r,rp,chk)
+function c80106546.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsPlayerCanDraw(tp)
 		and Duel.IsExistingMatchingCard(c80106546.drfilter,tp,LOCATION_HAND,0,1,e:GetHandler()) end
 	Duel.SetTargetPlayer(tp)
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,nil,1,tp,LOCATION_HAND)
 end
-function c80106546.activate(e,tp,eg,ep,ev,re,r,rp)
+function c80106546.drop(e,tp,eg,ep,ev,re,r,rp)
 	local p=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER)
 	Duel.Hint(HINT_SELECTMSG,p,HINTMSG_TODECK)
 	local g=Duel.SelectMatchingCard(p,c80106546.drfilter,p,LOCATION_HAND,0,1,63,nil)
@@ -69,10 +68,14 @@ end
 function c80106546.sdcon(e)
 	return Duel.IsExistingMatchingCard(c80106546.sdfilter,e:GetHandlerPlayer(),LOCATION_MZONE,0,1,nil)
 end
-function c80106546.damcon(e,tp,eg,ep,ev,re,r,rp)
-	return Duel.GetFieldGroupCount(tp,LOCATION_EXTRA,0)==0 
-		and not Duel.IsExistingMatchingCard(Card.IsType,tp,LOCATION_GRAVE,0,1,nil,TYPE_MONSTER)
-		and Duel.IsExistingMatchingCard(Card.IsType,tp,0,LOCATION_GRAVE,1,nil,TYPE_MONSTER)
+function c80106546.cfilter(c)
+	return c:IsType(TYPE_MONSTER)
+end
+function c80106546.desrepcon(e)
+	local tp=e:GetHandlerPlayer()
+	return Duel.GetFieldGroupCount(tp,LOCATION_EXTRA,0)==0
+		and not Duel.IsExistingMatchingCard(c80106546.cfilter,tp,LOCATION_GRAVE,0,1,nil)
+		and Duel.IsExistingMatchingCard(c80106546.cfilter,tp,0,LOCATION_GRAVE,1,nil)
 end
 function c80106546.damfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0xca00)
@@ -90,7 +93,7 @@ function c80106546.damop(e,tp,eg,ep,ev,re,r,rp)
 	Duel.Damage(p,ct*200,REASON_EFFECT)
 end
 function c80106546.spcon(e,tp,eg,ep,ev,re,r,rp)
-	return e:GetHandler():IsPreviousLocation(LOCATION_HAND) and bit.band(r,0x4040)==0x4040
+	return e:GetHandler():IsReason(REASON_EFFECT) and e:GetHandler():IsPreviousLocation(LOCATION_HAND) and not e:GetHandler():IsReason(REASON_RETURN)
 end
 function c80106546.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.CheckLPCost(tp,800) end
@@ -98,17 +101,23 @@ function c80106546.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 end
 function c80106546.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		and Duel.IsPlayerCanSpecialSummonMonster(tp,80106546,0,0x21,5,2200,1000,RACE_FIEND,ATTRIBUTE_DARK) end
+		and Duel.IsPlayerCanSpecialSummonMonster(tp,80106546,0,0xca00,5,2200,1000,RACE_FIEND,ATTRIBUTE_DARK) end
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
 function c80106546.spop(e,tp,eg,ep,ev,re,r,rp)
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e)
-		and Duel.IsPlayerCanSpecialSummonMonster(tp,80106546,0,0x21,5,2200,1000,RACE_FIEND,ATTRIBUTE_DARK) then
-		c:AddMonsterAttribute(TYPE_EFFECT)
+		and Duel.IsPlayerCanSpecialSummonMonster(tp,80106546,0,0xca00,5,2200,1000,RACE_FIEND,ATTRIBUTE_DARK) then
+		c:SetStatus(STATUS_NO_LEVEL,false)
+		local e1=Effect.CreateEffect(c)
+		e1:SetType(EFFECT_TYPE_SINGLE)
+		e1:SetCode(EFFECT_CHANGE_TYPE)
+		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
+		e1:SetValue(TYPE_EFFECT+TYPE_MONSTER)
+		e1:SetReset(RESET_EVENT+0x47c0000)
+		c:RegisterEffect(e1,true)
 		Duel.SpecialSummon(c,0,tp,tp,true,false,POS_FACEUP)
-		c:AddMonsterAttributeComplete()
 		local e7=Effect.CreateEffect(c)
 		e7:SetType(EFFECT_TYPE_SINGLE)
 		e7:SetCode(EFFECT_LEAVE_FIELD_REDIRECT)

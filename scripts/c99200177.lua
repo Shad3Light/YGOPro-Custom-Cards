@@ -60,7 +60,7 @@ function c99200177.spop(e,tp,eg,ep,ev,re,r,rp,c)
 	Duel.ShuffleHand(tp)
 end
 function c99200177.efilter(e,re,rp)
-	return re:GetHandler():IsType(TYPE_TRAP) and aux.tgval(e,re,rp)
+	return re:GetHandler():IsType(TYPE_TRAP)
 end
 function c99200177.remfilter(c)
 	return c:IsFacedown() and c:IsAbleToRemove()

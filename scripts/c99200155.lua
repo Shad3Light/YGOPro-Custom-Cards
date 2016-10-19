@@ -35,7 +35,7 @@ function c99200155.initial_effect(c)
 	c:RegisterEffect(e5)
 end
 function c99200155.efilter(e,re,rp)
-	return re:GetHandler():IsType(TYPE_TRAP) and aux.tgval(e,re,rp)
+	return re:GetHandler():IsType(TYPE_TRAP)
 end
 function c99200155.spfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0xda3790) and c:GetCode()~=99200155

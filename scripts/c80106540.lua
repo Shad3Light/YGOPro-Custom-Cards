@@ -1,6 +1,5 @@
 --The First Panticle of Iron
 function c80106540.initial_effect(c)
-	c:SetUniqueOnField(1,0,80106540)
 	--Activate
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_EQUIP)
@@ -36,6 +35,7 @@ function c80106540.initial_effect(c)
 	e5:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e5:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e5:SetCode(EVENT_TO_GRAVE)
+	e5:SetProperty(EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_DELAY)
 	e5:SetCondition(c80106540.spcon)
 	e5:SetCost(c80106540.spcost)
 	e5:SetTarget(c80106540.sptg)
@@ -47,9 +47,9 @@ function c80106540.initial_effect(c)
 	e6:SetCategory(CATEGORY_REMOVE)
 	e6:SetType(EFFECT_TYPE_TRIGGER_O+EFFECT_TYPE_SINGLE)
 	e6:SetCode(EVENT_SPSUMMON_SUCCESS)
-	e6:SetCondition(c80106540.rmcon)
-	e6:SetTarget(c80106540.rmtg)
-	e6:SetOperation(c80106540.rmop)
+	e6:SetCondition(c80106540.desrepcon)
+	e6:SetTarget(c80106540.remtg)
+	e6:SetOperation(c80106540.remop)
 	c:RegisterEffect(e6)
 	--Equip limit
 	local e7=Effect.CreateEffect(c)
@@ -86,7 +86,7 @@ function c80106540.eqop(e,tp,eg,ep,ev,re,r,rp)
 	end
 end
 function c80106540.spcon(e,tp,eg,ep,ev,re,r,rp)
-	return e:GetHandler():IsPreviousLocation(LOCATION_HAND) and bit.band(r,0x4040)==0x4040
+	return e:GetHandler():IsReason(REASON_EFFECT) and e:GetHandler():IsPreviousLocation(LOCATION_HAND) and not e:GetHandler():IsReason(REASON_RETURN)
 end
 function c80106540.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.CheckLPCost(tp,800) end
@@ -94,17 +94,23 @@ function c80106540.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 end
 function c80106540.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		and Duel.IsPlayerCanSpecialSummonMonster(tp,80106540,0,0x21,4,1800,2000,RACE_WARRIOR,ATTRIBUTE_DARK) end
+		and Duel.IsPlayerCanSpecialSummonMonster(tp,80106540,0,0xca00,4,1800,2000,RACE_WARRIOR,ATTRIBUTE_DARK) end
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
 function c80106540.spop(e,tp,eg,ep,ev,re,r,rp)
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e)
-		and Duel.IsPlayerCanSpecialSummonMonster(tp,80106540,0,0x21,4,1800,2000,RACE_WARRIOR,ATTRIBUTE_DARK) then
-		c:AddMonsterAttribute(TYPE_EFFECT)
+		and Duel.IsPlayerCanSpecialSummonMonster(tp,80106540,0,0xca00,4,1800,2000,RACE_WARRIOR,ATTRIBUTE_DARK) then
+		c:SetStatus(STATUS_NO_LEVEL,false)
+		local e1=Effect.CreateEffect(c)
+		e1:SetType(EFFECT_TYPE_SINGLE)
+		e1:SetCode(EFFECT_CHANGE_TYPE)
+		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
+		e1:SetValue(TYPE_EFFECT+TYPE_MONSTER)
+		e1:SetReset(RESET_EVENT+0x47c0000)
+		c:RegisterEffect(e1,true)
 		Duel.SpecialSummon(c,0,tp,tp,true,false,POS_FACEUP)
-		c:AddMonsterAttributeComplete()
 		local e7=Effect.CreateEffect(c)
 		e7:SetType(EFFECT_TYPE_SINGLE)
 		e7:SetCode(EFFECT_LEAVE_FIELD_REDIRECT)
@@ -114,16 +120,22 @@ function c80106540.spop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e7,true)
 	end
 end
-function c80106540.rmcon(e,tp,eg,ep,ev,re,r,rp)
-	return Duel.GetFieldGroupCount(tp,LOCATION_EXTRA,0)==0 
-		and not Duel.IsExistingMatchingCard(Card.IsType,tp,LOCATION_GRAVE,0,1,nil,TYPE_MONSTER)
-		and Duel.IsExistingMatchingCard(Card.IsType,tp,0,LOCATION_GRAVE,1,nil,TYPE_MONSTER)
+function c80106540.cfilter(c)
+	return c:IsType(TYPE_MONSTER)
 end
-function c80106540.rmtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsAbleToRemove,tp,0,LOCATION_HAND,1,nil) end
+function c80106540.desrepcon(e)
+	local tp=e:GetHandlerPlayer()
+	return Duel.GetFieldGroupCount(tp,LOCATION_EXTRA,0)==0
+		and not Duel.IsExistingMatchingCard(c80106540.cfilter,tp,LOCATION_GRAVE,0,1,nil)
+		and Duel.IsExistingMatchingCard(c80106540.cfilter,tp,0,LOCATION_GRAVE,1,nil)
+end
+function c80106540.remtg(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then return e:GetHandler():GetFlagEffect(80106540)==0
+		and Duel.IsExistingMatchingCard(Card.IsAbleToRemove,tp,0,LOCATION_HAND,1,nil) end
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,nil,1,tp,LOCATION_HAND)
+	e:GetHandler():RegisterFlagEffect(80106540,RESET_EVENT+0x1fe0000+RESET_PHASE+PHASE_END,0,1)
 end
-function c80106540.rmop(e,tp,eg,ep,ev,re,r,rp)
+function c80106540.remop(e,tp,eg,ep,ev,re,r,rp)
 	if not e:GetHandler():IsRelateToEffect(e) then return end
 	local g=Duel.GetMatchingGroup(Card.IsAbleToRemove,tp,0,LOCATION_HAND,nil)
 	if g:GetCount()>0 then
@@ -133,6 +145,7 @@ function c80106540.rmop(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetCode(EVENT_PHASE+PHASE_STANDBY)
 		e1:SetReset(RESET_PHASE+PHASE_STANDBY+RESET_SELF_TURN,1)
 		e1:SetCountLimit(1)
+		e1:SetLabel(c80106540.counter)
 		e1:SetCondition(c80106540.retcon)
 		e1:SetOperation(c80106540.retop)
 		e1:SetLabelObject(g)

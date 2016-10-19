@@ -33,7 +33,7 @@ function c99200159.initial_effect(c)
 	c:RegisterEffect(e5)
 end
 function c99200159.efilter(e,re,rp)
-	return re:GetHandler():IsType(TYPE_TRAP) and aux.tgval(e,re,rp)
+	return re:GetHandler():IsType(TYPE_TRAP)
 end
 function c99200159.filter(c)
 	return c:IsType(TYPE_MONSTER) and c:IsSetCard(0xda3790) and not c:IsCode(99200159) and c:IsAbleToGrave()

@@ -94,7 +94,7 @@ function c20912307.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.Remove(e:GetHandler(),POS_FACEUP,REASON_COST)
 end
 function c20912307.thfilter(c)
-	return c:IsSetCard(0xd0a2) or c:IsSetCard(0xd0a3) and c:IsType(TYPE_MONSTER) and c:IsAbleToHand()
+	return c:IsType(TYPE_MONSTER) and c:IsSetCard(0xd0a2) or c:IsSetCard(0xd0a3) and c:IsAbleToHand()
 end
 function c20912307.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c20912307.thfilter(chkc) end

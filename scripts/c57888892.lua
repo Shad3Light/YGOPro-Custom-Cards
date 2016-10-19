@@ -32,7 +32,7 @@ function c57888892.initial_effect(c)
 	e4:SetTarget(c57888892.atktg)
 	e4:SetOperation(c57888892.atkop)
 	c:RegisterEffect(e4)
-	--to defence
+	--to defense
 	local e5=Effect.CreateEffect(c)
 	e5:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
 	e5:SetCode(EVENT_DAMAGE_STEP_END)

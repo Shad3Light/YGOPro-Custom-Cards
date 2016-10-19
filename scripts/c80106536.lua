@@ -1,6 +1,5 @@
 --The Panticle of Healing
 function c80106536.initial_effect(c)
-	c:SetUniqueOnField(1,0,80106536)
 	--Activate
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -10,10 +9,18 @@ function c80106536.initial_effect(c)
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
-	e2:SetRange(LOCATION_ONFIELD)
+	e2:SetRange(LOCATION_MZONE)
 	e2:SetCode(EFFECT_SELF_DESTROY)
 	e2:SetCondition(c80106536.sdcon)
 	c:RegisterEffect(e2)
+	--self destroy2
+	local e3=Effect.CreateEffect(c)
+	e3:SetType(EFFECT_TYPE_SINGLE)
+	e3:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
+	e3:SetRange(LOCATION_SZONE)
+	e3:SetCode(EFFECT_SELF_DESTROY)
+	e3:SetCondition(c80106536.sdcon)
+	c:RegisterEffect(e3)
 	--recover
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(80106536,0))
@@ -30,6 +37,7 @@ function c80106536.initial_effect(c)
 	--recover2
 	local e5=Effect.CreateEffect(c)
 	e5:SetDescription(aux.Stringid(80106536,1))
+	e5:SetCategory(CATEGORY_RECOVER)
 	e5:SetType(EFFECT_TYPE_TRIGGER_F+EFFECT_TYPE_FIELD)
 	e5:SetCode(EVENT_PHASE+PHASE_END)
 	e5:SetRange(LOCATION_MZONE)
@@ -45,6 +53,7 @@ function c80106536.initial_effect(c)
 	e6:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e6:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e6:SetCode(EVENT_TO_GRAVE)
+	e6:SetProperty(EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_DELAY)
 	e6:SetCondition(c80106536.spcon)
 	e6:SetCost(c80106536.spcost)
 	e6:SetTarget(c80106536.sptg)
@@ -71,21 +80,22 @@ function c80106536.rectg(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.SetOperationInfo(0,CATEGORY_RECOVER,nil,0,tp,ct*300)
 end
 function c80106536.recop(e,tp,eg,ep,ev,re,r,rp)
-	local p=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER)
 	local ct=Duel.GetMatchingGroupCount(c80106536.filter,tp,LOCATION_MZONE,0,nil)
-	Duel.Recover(p,ct*300,REASON_EFFECT)
+	Duel.Recover(tp,ct*300,REASON_EFFECT)
 end
 function c80106536.rectg2(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
+	local ct=Duel.GetMatchingGroupCount(c80106536.filter,tp,LOCATION_MZONE,0,nil)
 	Duel.SetTargetPlayer(tp)
+	Duel.SetTargetParam(ct*500)
+	Duel.SetOperationInfo(0,CATEGORY_RECOVER,nil,0,tp,ct*500)
 end
 function c80106536.recop2(e,tp,eg,ep,ev,re,r,rp)
-	local p=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER)
-	local lp=Duel.GetMatchingGroupCount(c80106536.filter,tp,LOCATION_MZONE,0,nil)*500
-	Duel.SetLP(p,Duel.GetLP(p)+lp)
+	local ct=Duel.GetMatchingGroupCount(c80106536.filter,tp,LOCATION_MZONE,0,nil)
+	Duel.Recover(tp,ct*500,REASON_EFFECT)
 end
 function c80106536.spcon(e,tp,eg,ep,ev,re,r,rp)
-	return e:GetHandler():IsPreviousLocation(LOCATION_HAND) and bit.band(r,0x4040)==0x4040
+	return e:GetHandler():IsReason(REASON_EFFECT) and e:GetHandler():IsPreviousLocation(LOCATION_HAND) and not e:GetHandler():IsReason(REASON_RETURN)
 end
 function c80106536.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.CheckLPCost(tp,800) end
@@ -93,17 +103,23 @@ function c80106536.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 end
 function c80106536.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		and Duel.IsPlayerCanSpecialSummonMonster(tp,80106536,0,0x21,4,1500,1500,RACE_SPELLCASTER,ATTRIBUTE_DARK) end
+		and Duel.IsPlayerCanSpecialSummonMonster(tp,80106536,0,0xca00,4,1500,1500,RACE_SPELLCASTER,ATTRIBUTE_DARK) end
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
 function c80106536.spop(e,tp,eg,ep,ev,re,r,rp)
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e)
-		and Duel.IsPlayerCanSpecialSummonMonster(tp,80106536,0,0x21,4,1500,1500,RACE_SPELLCASTER,ATTRIBUTE_DARK) then
-		c:AddMonsterAttribute(TYPE_EFFECT)
+		and Duel.IsPlayerCanSpecialSummonMonster(tp,80106536,0,0xca00,4,1500,1500,RACE_SPELLCASTER,ATTRIBUTE_DARK) then
+		c:SetStatus(STATUS_NO_LEVEL,false)
+		local e1=Effect.CreateEffect(c)
+		e1:SetType(EFFECT_TYPE_SINGLE)
+		e1:SetCode(EFFECT_CHANGE_TYPE)
+		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
+		e1:SetValue(TYPE_EFFECT+TYPE_MONSTER)
+		e1:SetReset(RESET_EVENT+0x47c0000)
+		c:RegisterEffect(e1,true)
 		Duel.SpecialSummon(c,0,tp,tp,true,false,POS_FACEUP)
-		c:AddMonsterAttributeComplete()
 		local e7=Effect.CreateEffect(c)
 		e7:SetType(EFFECT_TYPE_SINGLE)
 		e7:SetCode(EFFECT_LEAVE_FIELD_REDIRECT)

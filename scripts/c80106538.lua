@@ -1,14 +1,13 @@
 --The First Panticle Chain
 function c80106538.initial_effect(c)
-	c:SetUniqueOnField(1,0,80106538)
 	--Activate
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_EQUIP)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
-	e1:SetTarget(c80106538.target)
-	e1:SetOperation(c80106538.activate)
+	e1:SetTarget(c80106538.eqtg)
+	e1:SetOperation(c80106538.eqop)
 	c:RegisterEffect(e1)
 	--self destroy
 	local e2=Effect.CreateEffect(c)
@@ -37,6 +36,7 @@ function c80106538.initial_effect(c)
 	e5:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e5:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e5:SetCode(EVENT_TO_GRAVE)
+	e5:SetProperty(EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_DELAY)
 	e5:SetCondition(c80106538.spcon)
 	e5:SetCost(c80106538.spcost)
 	e5:SetTarget(c80106538.sptg)
@@ -46,7 +46,7 @@ function c80106538.initial_effect(c)
 	local e6=Effect.CreateEffect(c)
 	e6:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e6:SetCode(EVENT_ATTACK_ANNOUNCE)
-	e6:SetRange(LOCATION_MZONE)
+	e6:SetRange(LOCATION_PZONE)
 	e6:SetCondition(c80106538.actcon)
 	e6:SetOperation(c80106538.actop)
 	c:RegisterEffect(e6)
@@ -84,14 +84,14 @@ end
 function c80106538.eqfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0xca00)
 end
-function c80106538.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
+function c80106538.eqtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and c80106538.eqfilter(chkc) end
 	if chk==0 then return Duel.IsExistingTarget(c80106538.eqfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)
 	Duel.SelectTarget(tp,c80106538.eqfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
 	Duel.SetOperationInfo(0,CATEGORY_EQUIP,e:GetHandler(),1,0,0)
 end
-function c80106538.activate(e,tp,eg,ep,ev,re,r,rp)
+function c80106538.eqop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local tc=Duel.GetFirstTarget()
 	if c:IsRelateToEffect(e) and tc:IsRelateToEffect(e) and tc:IsFaceup() then
@@ -99,7 +99,7 @@ function c80106538.activate(e,tp,eg,ep,ev,re,r,rp)
 	end
 end
 function c80106538.spcon(e,tp,eg,ep,ev,re,r,rp)
-	return e:GetHandler():IsPreviousLocation(LOCATION_HAND) and bit.band(r,0x4040)==0x4040
+	return e:GetHandler():IsReason(REASON_EFFECT) and e:GetHandler():IsPreviousLocation(LOCATION_HAND) and not e:GetHandler():IsReason(REASON_RETURN)
 end
 function c80106538.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.CheckLPCost(tp,1000) end
@@ -107,17 +107,23 @@ function c80106538.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 end
 function c80106538.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		and Duel.IsPlayerCanSpecialSummonMonster(tp,80106538,0,0x21,7,2500,2100,RACE_WARRIOR,ATTRIBUTE_DARK) end
+		and Duel.IsPlayerCanSpecialSummonMonster(tp,80106538,0,0xca00,4,1800,2000,RACE_WARRIOR,ATTRIBUTE_DARK) end
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
 function c80106538.spop(e,tp,eg,ep,ev,re,r,rp)
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e)
-		and Duel.IsPlayerCanSpecialSummonMonster(tp,80106538,0,0x21,7,2500,2100,RACE_WARRIOR,ATTRIBUTE_DARK) then
-		c:AddMonsterAttribute(TYPE_EFFECT)
+		and Duel.IsPlayerCanSpecialSummonMonster(tp,80106538,0,0xca00,4,1800,2000,RACE_WARRIOR,ATTRIBUTE_DARK) then
+		c:SetStatus(STATUS_NO_LEVEL,false)
+		local e1=Effect.CreateEffect(c)
+		e1:SetType(EFFECT_TYPE_SINGLE)
+		e1:SetCode(EFFECT_CHANGE_TYPE)
+		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
+		e1:SetValue(TYPE_EFFECT+TYPE_MONSTER)
+		e1:SetReset(RESET_EVENT+0x47c0000)
+		c:RegisterEffect(e1,true)
 		Duel.SpecialSummon(c,0,tp,tp,true,false,POS_FACEUP)
-		c:AddMonsterAttributeComplete()
 		local e7=Effect.CreateEffect(c)
 		e7:SetType(EFFECT_TYPE_SINGLE)
 		e7:SetCode(EFFECT_LEAVE_FIELD_REDIRECT)
@@ -130,7 +136,7 @@ end
 function c80106538.actcon(e,tp,eg,ep,ev,re,r,rp)
 	local tc=Duel.GetAttacker()
 	if tc:IsControler(1-tp) then tc=Duel.GetAttackTarget() end
-	return tc and tc:IsControler(tp) and tc:IsSetCard(0xca00)
+	return tc and tc:IsControler(tp) and tc:IsType(TYPE_MONSTER) and tc:IsSetCard(0xca00)
 end
 function c80106538.actop(e,tp,eg,ep,ev,re,r,rp)
 	local e1=Effect.CreateEffect(e:GetHandler())
@@ -138,10 +144,10 @@ function c80106538.actop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
 	e1:SetCode(EFFECT_CANNOT_ACTIVATE)
 	e1:SetTargetRange(0,1)
-	e1:SetValue(c80106538.aclimit2)
+	e1:SetValue(c13870050.aclimit)
 	e1:SetReset(RESET_PHASE+PHASE_DAMAGE)
 	Duel.RegisterEffect(e1,tp)
 end
-function c80106538.aclimit2(e,re,tp)
-	return re:GetHandler():IsType(TYPE_TRAP) and re:IsHasType(EFFECT_TYPE_ACTIVATE)
+function c80106538.eqlimit(e,c)
+	return c:IsSetCard(0xca00)
 end

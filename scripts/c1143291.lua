@@ -101,7 +101,7 @@ function c1143291.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_DECK) and chkc:IsControler(tp) and c1143291.spfilter(chkc,e,tp) end
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and Duel.IsExistingTarget(c1143291.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	local ft=3
+	local ft=2
 	if Duel.IsPlayerAffectedByEffect(tp,59822133) then ft=1 end
 	ft=math.min(ft,Duel.GetLocationCount(tp,LOCATION_MZONE))
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)

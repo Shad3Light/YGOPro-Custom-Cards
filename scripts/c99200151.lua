@@ -27,7 +27,7 @@ function c99200151.initial_effect(c)
 	c:RegisterEffect(e4)
 end
 function c99200151.efilter(e,re,rp)
-	return re:GetHandler():IsType(TYPE_TRAP) and aux.tgval(e,re,rp)
+	return re:GetHandler():IsType(TYPE_TRAP)
 end
 function c99200151.filter(c,e,tp)
 	return c:IsType(TYPE_MONSTER) and c:IsSetCard(0xda3790) and not c:IsCode(99200151) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)

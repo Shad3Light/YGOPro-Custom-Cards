@@ -96,10 +96,10 @@ function c1143224.thfilter(c)
 end
 function c1143224.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_DECK+LOCATION_REMOVED) and chkc:IsControler(tp) and c1143224.thfilter(chkc) end
-	if chk==0 then return Duel.IsExistingTarget(c1143224.thfilter,tp,LOCATION_DECK+LOCATION_REMOVED,0,2,nil) end
+	if chk==0 then return Duel.IsExistingTarget(c1143224.thfilter,tp,LOCATION_DECK+LOCATION_REMOVED,0,1,nil) end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)
-	local g=Duel.SelectTarget(tp,c1143224.thfilter,tp,LOCATION_DECK+LOCATION_REMOVED,0,2,2,nil)
-	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,2,0,0)
+	local g=Duel.SelectTarget(tp,c1143224.thfilter,tp,LOCATION_DECK+LOCATION_REMOVED,0,1,1,nil)
+	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
 function c1143224.sumfilter(c)
 	return c:IsSetCard(0xaf75) and c:GetLevel()==6 and c:IsSummonable(true,nil)
