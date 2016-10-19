@@ -1,13 +1,14 @@
 --Carole, Queen of Fiber Vine #2 
 function c160009541.initial_effect(c)
 	c:EnableReviveLimit()
-	local e1=Effect.CreateEffect(c)
-	e1:SetType(EFFECT_TYPE_SINGLE)
-	e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
-	e1:SetCode(EFFECT_ADD_TYPE)
-	e1:SetRange(LOCATION_MZONE+LOCATION_GRAVE)
-	e1:SetValue(TYPE_NORMAL)
-	c:RegisterEffect(e1)
+	c:EnableCounterPermit(0x88)
+	--local e1=Effect.CreateEffect(c)
+	--e1:SetType(EFFECT_TYPE_SINGLE)
+	--e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
+	--e1:SetCode(EFFECT_ADD_TYPE)
+	--e1:SetRange(LOCATION_MZONE+LOCATION_GRAVE)
+	--e1:SetValue(TYPE_NORMAL)
+	--c:RegisterEffect(e1)
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -23,21 +24,22 @@ function c160009541.initial_effect(c)
 	e3:SetRange(LOCATION_MZONE)
 	e3:SetProperty(EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_DAMAGE_CAL)
 	e3:SetCode(EVENT_CHAINING)
+	e3:SetCountLimit(1,160009541)
 	e3:SetCondition(c160009541.discon)
 	e3:SetCost(c160009541.discost)
 	e3:SetTarget(c160009541.distg)
 	e3:SetOperation(c160009541.disop)
 	c:RegisterEffect(e3)
 	--evolute summon
-	local e4=Effect.CreateEffect(c)
-	e4:SetDescription(aux.Stringid(160009541,0))
-	e4:SetCategory(CATEGORY_DESTROY)
-	e4:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
-	e4:SetCode(EVENT_SPSUMMON_SUCCESS)
-	e4:SetCondition(c160009541.descon)
-	e4:SetTarget(c160009541.destg)
-	e4:SetOperation(c160009541.desop)
-	c:RegisterEffect(e4)
+	--local e4=Effect.CreateEffect(c)
+	--e4:SetDescription(aux.Stringid(160009541,0))
+	--e4:SetCategory(CATEGORY_DESTROY)
+	--e4:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
+	--e4:SetCode(EVENT_SPSUMMON_SUCCESS)
+	--e4:SetCondition(c160009541.descon)
+	--e4:SetTarget(c160009541.destg)
+	--e4:SetOperation(c160009541.desop)
+	--c:RegisterEffect(e4)
 	--Destroy
 	local e5=Effect.CreateEffect(c)
 	e5:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_SINGLE)
@@ -68,41 +70,43 @@ function c160009541.initial_effect(c)
 	end
 end
 c160009541.evolute=true
-c160009541.material1=function(mc) return mc:IsRace(RACE_PLANT) and mc:IsFaceup() end
-c160009541.material2=function(mc) return mc:IsAttribute(ATTRIBUTE_EARTH) and mc:IsFaceup() end
+c160009541.material1=function(mc) return mc:IsRace(RACE_PLANT) and mc:GetLevel()==4 and mc:IsFaceup() end
+c160009541.material2=function(mc) return mc:IsAttribute(ATTRIBUTE_EARTH) and mc:GetLevel()==4 and mc:IsFaceup() end
 function c160009541.chk(e,tp,eg,ep,ev,re,r,rp)
 	Duel.CreateToken(tp,388)
 	Duel.CreateToken(1-tp,388)
 end
-function c160009541.descon(e,tp,eg,ep,ev,re,r,rp)
-	return  e:GetHandler():GetSummonType()==SUMMON_TYPE_SPECIAL+388
-end
-function c160009541.deesfilter(c)
-	return c:GetSummonLocation()==LOCATION_EXTRA and c:IsDestructable()
-end
-function c160009541.destg(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return true end
-	local g=Duel.GetMatchingGroup(c160009541.deesfilter,tp,LOCATION_MZONE,LOCATION_MZONE,e:GetHandler())
-	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
-end
-function c160009541.desop(e,tp,eg,ep,ev,re,r,rp)
-	local g=Duel.GetMatchingGroup(c160009541.deesfilter,tp,LOCATION_MZONE,LOCATION_MZONE,e:GetHandler())
-	if g:GetCount()>0 then
-		Duel.Destroy(g,REASON_EFFECT)
-	end
-end
+--function c160009541.descon(e,tp,eg,ep,ev,re,r,rp)
+--	Debug.Message("Appear, Queen of Cursed Fallen Warriors!")
+--	return  e:GetHandler():GetSummonType()==SUMMON_TYPE_SPECIAL+388
+--end
+--function c160009541.deesfilter(c)
+	--return c:GetSummonLocation()==LOCATION_EXTRA and c:IsDestructable()
+--end
+--function c160009541.destg(e,tp,eg,ep,ev,re,r,rp,chk)
+--	if chk==0 then return true end
+--	local g=Duel.GetMatchingGroup(c160009541.deesfilter,tp,LOCATION_MZONE,LOCATION_MZONE,e:GetHandler())
+--	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
+--end
+--function c160009541.desop(e,tp,eg,ep,ev,re,r,rp)
+--	local g=Duel.GetMatchingGroup(c160009541.deesfilter,tp,LOCATION_MZONE,LOCATION_MZONE,e:GetHandler())
+--	if g:GetCount()>0 then
+--		Duel.Destroy(g,REASON_EFFECT)
+--	end
+--end
 function c160009541.costfilter(c)
 	return c:IsCode(500311028) and c:IsAbleToRemoveAsCost()
 end
 function c160009541.discon(e,tp,eg,ep,ev,re,r,rp)
-	if e:GetHandler():IsStatus(STATUS_BATTLE_DESTROYED) then return false end
+		if e:GetHandler():IsStatus(STATUS_BATTLE_DESTROYED) then return false end
 	local loc=Duel.GetChainInfo(ev,CHAININFO_TRIGGERING_LOCATION)
-	return re:IsActiveType(TYPE_MONSTER) and bit.band(re:GetHandler():GetSummonType(),SUMMON_TYPE_SPECIAL)==SUMMON_TYPE_SPECIAL
+	return loc==LOCATION_MZONE and re:IsActiveType(TYPE_MONSTER)
+		and bit.band(re:GetHandler():GetSummonType(),SUMMON_TYPE_SPECIAL)==SUMMON_TYPE_SPECIAL
 		and Duel.IsChainNegatable(ev)
 end
 function c160009541.discost(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return e:GetHandler():IsCanRemoveCounter(tp,0x1088,4,REASON_COST) end
-	e:GetHandler():RemoveCounter(tp,0x1088,4,REASON_COST)
+	if chk==0 then return e:GetHandler():IsCanRemoveCounter(tp,0x88,4,REASON_COST) end
+	e:GetHandler():RemoveCounter(tp,0x88,4,REASON_COST)
 end
 function c160009541.distg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
@@ -119,7 +123,7 @@ function c160009541.disop(e,tp,eg,ep,ev,re,r,rp)
 end
 function c160009541.checkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	if c:GetCounter(0x1088)>0 then
+	if c:GetCounter(0x88)>0 then
 		c:RegisterFlagEffect(160009541,RESET_EVENT+0x17a0000,0,0)
 	end
 end

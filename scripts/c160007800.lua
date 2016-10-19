@@ -1,13 +1,28 @@
 --Paintress Cesano
 function c160007800.initial_effect(c)
 	--pendulum summon
-	aux.EnablePendulumAttribute(c,false)
+	--pendulum summon
+	aux.EnablePendulumAttribute(c)
 	--Activate
+	local e0=Effect.CreateEffect(c)
+	e0:SetType(EFFECT_TYPE_ACTIVATE)
+	e0:SetCode(EVENT_FREE_CHAIN)
+	c:RegisterEffect(e0)
+	
+		--tohand
 	local e1=Effect.CreateEffect(c)
-	e1:SetType(EFFECT_TYPE_ACTIVATE)
-	e1:SetCode(EVENT_FREE_CHAIN)
-	e1:SetCost(c160007800.cost)
+	e1:SetDescription(aux.Stringid(160007800,1))
+	e1:SetCategory(CATEGORY_DESTROY+CATEGORY_TOHAND+CATEGORY_SEARCH)
+	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
+	e1:SetCode(EVENT_PHASE+PHASE_END)
+	e1:SetRange(LOCATION_PZONE)
+	e1:SetCountLimit(1,16178682)
+	e1:SetCondition(c160007800.thcon)
+	e1:SetCost(c160007800.thcost)
+	e1:SetTarget(c160007800.thtg)
+	e1:SetOperation(c160007800.thop)
 	c:RegisterEffect(e1)
+
 	--splimit
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
@@ -18,28 +33,9 @@ function c160007800.initial_effect(c)
 	e2:SetTarget(c160007800.splimit)
 	e2:SetCondition(c160007800.splimcon)
 	c:RegisterEffect(e2)
-	--maintain
-	local e3=Effect.CreateEffect(c)
-	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
-	e3:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
-	e3:SetCode(EVENT_PHASE+PHASE_STANDBY)
-	e3:SetRange(LOCATION_PZONE)
-	e3:SetCountLimit(1)
-	e3:SetOperation(c160007800.mtop)
-	c:RegisterEffect(e3)
-	--disable spsummon
-	local e4=Effect.CreateEffect(c)
-	e4:SetType(EFFECT_TYPE_FIELD)
-	e4:SetRange(LOCATION_PZONE)
-	e4:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)
-	e4:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
-	e4:SetTargetRange(1,1)
-	e4:SetTarget(c160007800.sumlimit)
-	c:RegisterEffect(e4)
 end
-function c160007800.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return Duel.CheckLPCost(tp,2000) end
-	Duel.PayLPCost(tp,2000)
+function c160007800.thcon(e,tp,eg,ep,ev,re,r,rp)
+	return Duel.GetTurnPlayer()==tp
 end
 function c160007800.splimit(e,c,sump,sumtype,sumpos,targetp)
 	if c:IsSetCard(0xc50) or c:IsType(TYPE_NORMAL) then return false end
@@ -48,14 +44,22 @@ end
 function c160007800.splimcon(e)
 	return not e:GetHandler():IsForbidden()
 end
-function c160007800.mtop(e,tp,eg,ep,ev,re,r,rp)
-	if Duel.GetTurnPlayer()~=tp then return end
-	if Duel.CheckLPCost(tp,1000) then
-		Duel.PayLPCost(tp,1000)
-	else
-		Duel.Destroy(e:GetHandler(),REASON_RULE)
-	end
+function c160007800.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then return e:GetHandler():IsAbleToExtra()  end
+	Duel.SendtoExtraP(e:GetHandler(),POS_FACEUP,REASON_EFFECT+REASON_COST)
 end
-function c160007800.sumlimit(e,c,sump,sumtype,sumpos,targetp)
-	return c:IsLocation(LOCATION_EXTRA+LOCATION_HAND) and not c:IsType(TYPE_PENDULUM) and not c:IsType(TYPE_NORMAL)
+function c160007800.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then return true end
+	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
+end
+function c160007800.filter(c)
+	return c:IsType(TYPE_NORMAL) and c:IsAbleToHand()
+end
+function c160007800.thop(e,tp,eg,ep,ev,re,r,rp)
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
+	local g=Duel.SelectMatchingCard(tp,c160007800.filter,tp,LOCATION_DECK,0,1,1,nil)
+	if g:GetCount()>0 then
+		Duel.SendtoHand(g,nil,REASON_EFFECT)
+		Duel.ConfirmCards(1-tp,g)
+	end
 end

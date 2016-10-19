@@ -1,6 +1,6 @@
 --Paintress Dragon
 function c160008741.initial_effect(c)
-	aux.AddSynchroProcedure(c,aux.FilterBoolFunction(Card.IsSetCard,0xc50),aux.NonTuner(Card.IsType,TYPE_NORMAL),2)
+	aux.AddSynchroProcedure(c,aux.FilterBoolFunction(Card.IsSetCard,0xc50),aux.NonTuner(Card.IsType,TYPE_NORMAL),1)
 	c:EnableReviveLimit()
 	--destroy
 	local e1=Effect.CreateEffect(c)
@@ -17,7 +17,7 @@ function c160008741.initial_effect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
 	e2:SetCode(EFFECT_ADD_TYPE)
-	e2:SetRange(LOCATION_MZONE+LOCATION_GRAVE)
+	e2:SetRange(LOCATION_GRAVE)
 	e2:SetValue(TYPE_NORMAL)
 	c:RegisterEffect(e2)
 	--check
@@ -41,7 +41,7 @@ function c160008741.regop(e,tp,eg,ep,ev,re,r,rp)
 end
 function c160008741.damcon(e,tp,eg,ep,ev,re,r,rp)
 	local bc=e:GetHandler():GetBattleTarget()
-	return e:GetHandler()==Duel.GetAttacker() and ep~=tp and bc~=nil and not bc:IsType(TYPE_NORMAL)
+	return e:GetHandler()==Duel.GetAttacker() and ep~=tp and bc~=nil   and  bc:IsType(TYPE_EFFECT)
 end
 function c160008741.damop(e,tp,eg,ep,ev,re,r,rp)
 	Duel.ChangeBattleDamage(ep,ev*2)
@@ -50,7 +50,7 @@ function c160008741.descon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetSummonType()==SUMMON_TYPE_SYNCHRO
 end
 function c160008741.filter(c)
-	return not c:IsType(TYPE_NORMAL) and c:IsFaceup() and c:IsDestructable()
+	return c:IsType(TYPE_EFFECT) and c:IsFaceup() and c:IsDestructable()
 end
 function c160008741.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
