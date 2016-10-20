@@ -8,3 +8,7 @@ https://docs.google.com/spreadsheets/d/1F8ZNKO9FNlZkQTpBzmBFXIjs0m86l8HNh03aIHKI
 To Download And keep the cards synced Use the Updater
 
 https://github.com/TheOnePharaoh/YGOPro-Custom-Card-Updater/raw/master/YGOProCustomCardUpdaterV1.zip
+
+Extract in your game folder and run update-cc.bat
+
+for automatic updating create a task in task scheduler for update-cc-auto.bat
