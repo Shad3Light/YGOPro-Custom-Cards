@@ -1,4 +1,4 @@
-# YGOPro-Custom-Cards
+ # YGOPro-Custom-Cards
 This Will Include All Custom Cards For YGOPro to be used online
 
 List Of Cards Is Here 
@@ -9,6 +9,6 @@ To Download And keep the cards synced Use the Updater
 
 https://github.com/TheOnePharaoh/YGOPro-Custom-Card-Updater/raw/master/YGOProCustomCardUpdaterV1.zip
 
-Extract in your game folder and run update-cc.bat
+Extract the updater in your game folder and run update-cc.bat
 
 for automatic updating create a task in task scheduler for update-cc-auto.bat
