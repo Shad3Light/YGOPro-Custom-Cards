@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 --Ynershia Gate
 --  By Shad3
 
@@ -112,4 +111,3 @@ function scard.a_op(e,tp,eg,ep,ev,re,r,rp)
 		Duel.SpecialSummon(sg:Select(tp,1,1,nil),0,tp,tp,false,false,POS_FACEUP)
 	end
 end
->>>>>>> refs/remotes/origin/master
